@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Test suite for stardate program
 # Compares output against known-good reference values
 

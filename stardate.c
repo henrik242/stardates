@@ -206,7 +206,7 @@ static void getcurdate(intdate *dt)
 {
   time_t t = time(NULL);
   struct tm *tm = gmtime(&t);
-  char utc[20];
+  char utc[32];
   sprintf(utc, "%04d-%02d-%02dT%02d:%02d:%02d", tm->tm_year+1900, tm->tm_mon+1,
       tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
   gregin(utc, dt);
@@ -823,7 +823,7 @@ static char const *newcalcout(intdate const *dt)
   if(newcalcdigits == 0) {
     sprintf(ret, "%ld", (long)sd);
   } else {
-    char fmt[8];
+    char fmt[16];
     sprintf(fmt, "%%.%uf", newcalcdigits);
     sprintf(ret, fmt, sd);
   }
