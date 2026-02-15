@@ -98,6 +98,24 @@ four-fifths of the changes are 173 seconds after the previous change,
 and the other fifth are 172 seconds after.)
 .RE
 .TP
+.BR \-n [\fIn\fR]
+Output the date as a TNG-style stardate using the simple
+formula of 1000 stardate units per Gregorian calendar year,
+with an epoch of January 1, 2323.
+.IR n ,
+if given, specifies the number of digits output after the decimal point.
+If not specified, it defaults to 2.
+The output looks like
+.BI \fR`` nnnnn . dd \fR''
+(no issue number in brackets).
+.RS
+.PP
+The formula is: stardate = (year \- 2323) * 1000 + (day_of_year / days_in_year) * 1000.
+Dates before 2323 produce negative stardates.
+This format corresponds to the widely-used fan convention where
+TNG season 1 begins at approximately stardate 41000 (year 2364).
+.RE
+.TP
 .BR -j
 Output the date as a date in the Julian calendar, with UTC time.
 The output looks like
@@ -162,6 +180,17 @@ equal to 20, [0, 5006).  If greater than 20, [0, 100000).
 The FAQ explains these range changes.
 .RE
 .TP
+.BI nnnnn
+.PD 0
+.TP
+.BI nnnnn . dd
+.PD
+A TNG-style stardate without issue brackets.  The value is interpreted
+using the simple formula of 1000 units per Gregorian year from an epoch
+of 2323-01-01.  For example,
+.RB `` 41153.7 ''
+corresponds to a date in early 2364.
+.TP
 .IB yyyy = mm = dd
 .PD 0
 .TP
@@ -204,6 +233,83 @@ A negative number indicates a time before 1970.  In the forms with
 the number is in hexadecimal.
 .PP
 Case of alphabetic characters in input is ignored.
+.SH "STARDATE SYSTEMS"
+Two stardate output formats are available:
+.BR \-s
+(the original issue-based system from the
+.IR "Stardates in Star Trek FAQ" )
+and
+.BR \-n
+(a simpler system matching TNG on-screen conventions).
+They agree on the epoch (January 1, 2323) and both produce roughly
+1000 stardate units per year, but they differ in how that rate is defined.
+.SS "Issue-based stardates (\-s)"
+The original system from the
+.IR "Stardates in Star Trek FAQ"
+by Andrew Main divides time into
+.I issues
+displayed in square brackets.
+For the TNG era (issue 21 onward), each issue spans exactly one quarter
+of the Gregorian 400-year cycle (146097/4 = 36524.25 days), and contains
+100000 stardate units.
+This gives a
+.B constant
+time rate of one unit per 31556.952 seconds (approximately 8 hours
+45 minutes 34 seconds), regardless of whether the current year is
+a leap year or not.
+.PP
+Because the rate is constant and a calendar year is not (365 or 366 days),
+the stardate does not advance by exactly 1000 per year.
+In a normal 365-day year it advances 999.34 units; in a 366-day leap year
+it advances 1002.07 units.
+This means year boundaries do not fall on round thousands.
+For example, January 1, 2364 (the start of TNG season 1) is
+stardate [21]41000.15, not [21]41000.00.
+.PP
+By the TNG series finale (circa stardate 47988), this drift has accumulated
+to nearly one full unit: the date corresponding to the on-screen stardate
+47988.0 is rendered as [21]47988.99 in this system.
+.SS "TNG-style stardates (\-n)"
+The
+.B \-n
+system uses the formula:
+.PP
+.RS
+stardate = (year \- 2323) \(mu 1000 + (day_of_year / days_in_year) \(mu 1000
+.RE
+.PP
+This produces exactly 1000 units per calendar year, with year boundaries
+always falling on round thousands: 2364-01-01 is exactly 41000.00,
+2365-01-01 is 42000.00, and so on.
+The trade-off is that the time rate is not constant: one stardate unit
+is 31536 seconds (8 h 45 min 36 s) in a normal year but
+31622.4 seconds (8 h 47 min 2.4 s) in a leap year.
+.PP
+This system matches the convention used by the TNG writing staff,
+as documented in the
+.IR "Star Trek: The Next Generation Technical Manual"
+(Sternbach & Okuda, 1991) and the
+.IR "Star Trek Chronology"
+(Okuda & Okuda, 1996).
+The writers assigned stardates so that the first digit indicated the
+TNG season (season 1 = 41xxx, season 2 = 42xxx, and so on), with
+each season spanning one in-universe year.
+As a result, canonical on-screen stardates round-trip exactly through
+.BR \-n :
+input of 41153.7 produces output 41153.70, whereas the issue-based
+.B \-s
+system shifts it to [21]41154.17.
+.SS "Which to use"
+Use
+.B \-n
+when working with on-screen stardates from TNG, DS9, or Voyager,
+or when a clean 1000-per-year scale is desired.
+Use
+.B \-s
+when compatibility with the
+.I "Stardates in Star Trek FAQ"
+notation is needed, or when a constant time rate (independent of
+leap years) is preferred.
 .SH AUTHOR
 Andrew Main <zefram@fysh.org>
 .SH "SEE ALSO"

@@ -1,8 +1,4 @@
-
-
-
-STARDATE(1)                                           STARDATE(1)
-
+STARDATE(1)                 General Commands Manual                STARDATE(1)
 
 NAME
        stardate - convert between stardates and other calendars
@@ -11,153 +7,188 @@ SYNOPSIS
        stardate [ options ] [ date ... ]
 
 DESCRIPTION
-       stardate  interprets  the  dates  specified on its command
-       line, and outputs them in the  formats  specified  by  the
-       options.
+       stardate interprets the dates specified on its command line, and
+       outputs them in the formats specified by the options.
 
-       If no dates are specified, the current time, read from the
-       system clock, is used.  If no options are specified, dates
-       are  output  in  the  form of stardates.  Consequently, if
-       stardate is invoked with no arguments, it outputs the cur-
-       rent  time as a stardate.  This performs much the same job
-       as date(1), but with a more interesting form of output.
+       If no dates are specified, the current time, read from the system
+       clock, is used.  If no options are specified, dates are output in the
+       form of stardates.  Consequently, if stardate is invoked with no
+       arguments, it outputs the current time as a stardate.  This performs
+       much the same job as date(1), but with a more interesting form of
+       output.
 
-       Dates on output are always rounded down, and  so  in  some
-       cases  will  generate different output if reused as input.
-       This rounding is always such that the output date  is  the
-       latest time, expressible in the format being used, that is
-       no later than the time specified as input.
+       Dates on output are always rounded down, and so in some cases will
+       generate different output if reused as input.  This rounding is always
+       such that the output date is the latest time, expressible in the format
+       being used, that is no later than the time specified as input.
 
-       This program handles dates from 0001=01=01 (Julian  calen-
-       dar)  up to (currently) (2^64 - 1) seconds later, which is
-       beyond the year (5 x 10^11).  Any date within  this  range
-       can  be  input or output in any of the formats the program
-       supports.  Consequently, any date the program outputs will
-       be  accepted  as  input.   The only exception is for dates
-       within the first half  second  of  the  acceptable  range,
-       where   the   value   output  in  the  quadcent  calendar,
-       ``0000*12*31T02:03:16'' (chosen due to the  rounding  men-
-       tioned above), is actually outside the acceptable range.
+       This program handles dates from 0001=01=01 (Julian calendar) up to
+       (currently) (2^64 - 1) seconds later, which is beyond the year (5 x
+       10^11).  Any date within this range can be input or output in any of
+       the formats the program supports.  Consequently, any date the program
+       outputs will be accepted as input.  The only exception is for dates
+       within the first half second of the acceptable range, where the value
+       output in the quadcent calendar, ``0000*12*31T02:03:16'' (chosen due to
+       the rounding mentioned above), is actually outside the acceptable
+       range.
 
-       The  stardate code is based on information in version 1 of
-       the Stardates in Star Trek FAQ, which is regularly  posted
-       to the USENET newsgroup rec.arts.startrek.tech.
+       The stardate code is based on information in version 1 of the Stardates
+       in Star Trek FAQ, which is regularly posted to the USENET newsgroup
+       rec.arts.startrek.tech.
 
 OPTIONS
-       -s[n]  Output the date as a stardate.  n, if given, speci-
-              fies the number of digits output after the  decimal
-              point.   If  not  specified, it defaults to 2.  The
-              output looks like ``[i]nnnn.dd''.
+       -s[n]  Output the date as a stardate.  n, if given, specifies the
+              number of digits output after the decimal point.  If not
+              specified, it defaults to 2.  The output looks like
+              ``[i]nnnn.dd''.
 
-              When 2 decimal places are used, the output  of  the
-              current  time  changes every 172.8 seconds.  (Actu-
-              ally, because of the resolution of  C  time,  four-
-              fifths  of  the  changes  are 173 seconds after the
-              previous change, and the other fifth are  172  sec-
-              onds after.)
+              When 2 decimal places are used, the output of the current time
+              changes every 172.8 seconds.  (Actually, because of the
+              resolution of C time, four-fifths of the changes are 173 seconds
+              after the previous change, and the other fifth are 172 seconds
+              after.)
 
-       -j     Output  the  date as a date in the Julian calendar,
-              with   UTC   time.    The   output    looks    like
+       -n[n]  Output the date as a TNG-style stardate using the simple formula
+              of 1000 stardate units per Gregorian calendar year, with an
+              epoch of January 1, 2323.  n, if given, specifies the number of
+              digits output after the decimal point.  If not specified, it
+              defaults to 2.  The output looks like ``nnnnn.dd'' (no issue
+              number in brackets).
 
+              The formula is: stardate = (year - 2323) * 1000 + (day_of_year /
+              days_in_year) * 1000.  Dates before 2323 produce negative
+              stardates.  This format corresponds to the widely-used fan
+              convention where TNG season 1 begins at approximately stardate
+              41000 (year 2364).
 
+       -j     Output the date as a date in the Julian calendar, with UTC time.
+              The output looks like ``yyyy=mm=ddThh:mm:ss''.
 
-Stardates 1.6    9 February 1997, SD [-31]8857.62               1
+       -g     Output the date as a date in the Gregorian calendar, with UTC
+              time.  The output looks like ``yyyy-mm-ddThh:mm:ss''.
 
+       -q     Output the date as a date in the Quadcent calendar, with UTC
+              time.  The output looks like ``yyyy*mm*ddThh:mm:ss''.
 
+              This calendar is explained in detail in the Stardates in Star
+              Trek FAQ.  Briefly, it uses seconds that are approximately
+              1.00066 SI seconds long, and has no leap years.  Each 400 years
+              in this calendar is exactly as long as 400 years in the
+              Gregorian calendar, but all years in the quadcent calendar are
+              the same length.
 
+       -u     Output the date in the form of the traditional Unix time.  This
+              is a number of seconds since midnight UTC on 1970-01-01.  The
+              output looks like ``Unnnnnnnnn''.
 
-
-STARDATE(1)                                           STARDATE(1)
-
-
-              ``yyyy=mm=ddThh:mm:ss''.
-
-       -g     Output  the  date as a date in the Gregorian calen-
-              dar, with UTC time.  The output looks like  ``yyyy-
-              mm-ddThh:mm:ss''.
-
-       -q     Output the date as a date in the Quadcent calendar,
-              with   UTC   time.    The   output    looks    like
-              ``yyyy*mm*ddThh:mm:ss''.
-
-              This  calendar  is explained in detail in the Star-
-              dates in Star Trek FAQ.  Briefly, it  uses  seconds
-              that are approximately 1.00066 SI seconds long, and
-              has no leap years.  Each 400 years in this calendar
-              is  exactly  as  long as 400 years in the Gregorian
-              calendar, but all years in  the  quadcent  calendar
-              are the same length.
-
-       -u     Output the date in the form of the traditional Unix
-              time.  This is a number of seconds  since  midnight
-              UTC   on   1970-01-01.    The   output  looks  like
-              ``Unnnnnnnnn''.
-
-       -x     Output the date in the form of the traditional Unix
-              time,   in  hexadecimal.   The  output  looks  like
-              ``U0xnnnnnnnnn''.
+       -x     Output the date in the form of the traditional Unix time, in
+              hexadecimal.  The output looks like ``U0xnnnnnnnnn''.
 
 INPUT FORMATS
-       dates may be specified in any of the  output  formats,  as
-       described above, with a few variations allowed.  More pre-
-       cisely, the following forms are permitted:
+       dates may be specified in any of the output formats, as described
+       above, with a few variations allowed.  More precisely, the following
+       forms are permitted:
 
        [issue]nnnn
        [-issue]nnnn
        [issue]nnnn.dd
        [-issue]nnnn.dd
-              A stardate.  The  issue  number,  with  the  square
-              brackets,  is  mandatory.   The  fractional part is
-              optional.
+              A stardate.  The issue number, with the square brackets, is
+              mandatory.  The fractional part is optional.
 
-              Stardate   ``[0]0000.0''   is   midnight   UTC   on
-              2162-01-04;  negative  issue numbers indicate times
-              before that.  If issue is less than 20, the  number
-              must  be  in the range [0, 10000).  If equal to 20,
-              [0, 5006).  If greater than 20, [0,  100000).   The
-              FAQ explains these range changes.
+              Stardate ``[0]0000.0'' is midnight UTC on 2162-01-04; negative
+              issue numbers indicate times before that.  If issue is less than
+              20, the number must be in the range [0, 10000).  If equal to 20,
+              [0, 5006).  If greater than 20, [0, 100000).  The FAQ explains
+              these range changes.
+
+       nnnnn
+       nnnnn.dd
+              A TNG-style stardate without issue brackets.  The value is
+              interpreted using the simple formula of 1000 units per Gregorian
+              year from an epoch of 2323-01-01.  For example, ``41153.7''
+              corresponds to a date in early 2364.
 
        yyyy=mm=dd
        yyyy=mm=ddThh:mm
        yyyy=mm=ddThh:mm:ss
-              A  date  in  the Julian calendar, optionally with a
-              time in UTC.
-
-
-
-
-
-Stardates 1.6    9 February 1997, SD [-31]8857.62               2
-
-
-
-
-
-STARDATE(1)                                           STARDATE(1)
-
+              A date in the Julian calendar, optionally with a time in UTC.
 
        yyyy-mm-dd
        yyyy-mm-ddThh:mm
        yyyy-mm-ddThh:mm:ss
-              A date in the Gregorian calendar, optionally with a
-              time in UTC.
+              A date in the Gregorian calendar, optionally with a time in UTC.
 
        yyyy*mm*dd
        yyyy*mm*ddThh:mm
        yyyy*mm*ddThh:mm:ss
-              A  date in the Quadcent calendar, optionally with a
-              time in UTC.
+              A date in the Quadcent calendar, optionally with a time in UTC.
 
        Unnnnnnnnnn
        U-nnnnnnnnnn
        U0xnnnnnnnnnn
        U-0xnnnnnnnnnn
-              A Unix time specification -  a  number  of  seconds
-              since  1970-01-01.   A  negative number indicates a
-              time before 1970.  In the forms  with  ``0x'',  the
-              number is in hexadecimal.
+              A Unix time specification - a number of seconds since
+              1970-01-01.  A negative number indicates a time before 1970.  In
+              the forms with ``0x'', the number is in hexadecimal.
 
        Case of alphabetic characters in input is ignored.
+
+STARDATE SYSTEMS
+       Two stardate output formats are available: -s (the original issue-based
+       system from the Stardates in Star Trek FAQ) and -n (a simpler system
+       matching TNG on-screen conventions).  They agree on the epoch (January
+       1, 2323) and both produce roughly 1000 stardate units per year, but
+       they differ in how that rate is defined.
+
+   Issue-based stardates (-s)
+       The original system from the Stardates in Star Trek FAQ by Andrew Main
+       divides time into issues displayed in square brackets.  For the TNG era
+       (issue 21 onward), each issue spans exactly one quarter of the
+       Gregorian 400-year cycle (146097/4 = 36524.25 days), and contains
+       100000 stardate units.  This gives a constant time rate of one unit per
+       31556.952 seconds (approximately 8 hours 45 minutes 34 seconds),
+       regardless of whether the current year is a leap year or not.
+
+       Because the rate is constant and a calendar year is not (365 or 366
+       days), the stardate does not advance by exactly 1000 per year.  In a
+       normal 365-day year it advances 999.34 units; in a 366-day leap year it
+       advances 1002.07 units.  This means year boundaries do not fall on
+       round thousands.  For example, January 1, 2364 (the start of TNG season
+       1) is stardate [21]41000.15, not [21]41000.00.
+
+       By the TNG series finale (circa stardate 47988), this drift has
+       accumulated to nearly one full unit: the date corresponding to the on-
+       screen stardate 47988.0 is rendered as [21]47988.99 in this system.
+
+   TNG-style stardates (-n)
+       The -n system uses the formula:
+
+              stardate = (year - 2323) x 1000 + (day_of_year / days_in_year) x
+              1000
+
+       This produces exactly 1000 units per calendar year, with year
+       boundaries always falling on round thousands: 2364-01-01 is exactly
+       41000.00, 2365-01-01 is 42000.00, and so on.  The trade-off is that the
+       time rate is not constant: one stardate unit is 31536 seconds (8 h 45
+       min 36 s) in a normal year but 31622.4 seconds (8 h 47 min 2.4 s) in a
+       leap year.
+
+       This system matches the convention used by the TNG writing staff, as
+       documented in the Star Trek: The Next Generation Technical Manual
+       (Sternbach & Okuda, 1991) and the Star Trek Chronology (Okuda & Okuda,
+       1996).  The writers assigned stardates so that the first digit
+       indicated the TNG season (season 1 = 41xxx, season 2 = 42xxx, and so
+       on), with each season spanning one in-universe year.  As a result,
+       canonical on-screen stardates round-trip exactly through -n: input of
+       41153.7 produces output 41153.70, whereas the issue-based -s system
+       shifts it to [21]41154.17.
+
+   Which to use
+       Use -n when working with on-screen stardates from TNG, DS9, or Voyager,
+       or when a clean 1000-per-year scale is desired.  Use -s when
+       compatibility with the Stardates in Star Trek FAQ notation is needed,
+       or when a constant time rate (independent of leap years) is preferred.
 
 AUTHOR
        Andrew Main <zefram@fysh.org>
@@ -168,31 +199,4 @@ SEE ALSO
 BUGS
        This program will not handle dates BCE.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Stardates 1.6    9 February 1997, SD [-31]8857.62               3
-
-
+Stardates 1.6          9 February 1997, SD [-31]8857.62            STARDATE(1)
