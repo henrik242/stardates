@@ -6,9 +6,17 @@ Originally written by Andrew Main (Zefram) in 1997, based on his
 *Stardates in Star Trek FAQ*. See [README.orig](README.orig) for the
 original documentation.
 
-## Build
+## Install
+
+### Homebrew (macOS)
+
+    brew install henrik242/brew/stardates
+
+### From source
 
     make
+    sudo cp stardate /usr/local/bin/
+    sudo cp stardate.1 /usr/local/share/man/man1/
 
 ## Usage
 
