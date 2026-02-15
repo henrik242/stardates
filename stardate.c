@@ -133,6 +133,25 @@ int main(int argc, char **argv)
     progname = "stardate";
   while(*++argv && **argv == '-')
     while(*++*argv) {
+      if(**argv == 'v') {
+	printf("stardate 1.6.2\n");
+	exit(EXIT_SUCCESS);
+      }
+      if(**argv == 'h') {
+	printf("Usage: %s [-s[0-6]] [-j] [-g] [-q] [-u] [-x] [-h] [-v] [date ...]\n"
+	       "Options:\n"
+	       "  -s[N]  Output stardate (N = decimal digits, 0-6, default 2)\n"
+	       "  -j     Output Julian calendar date\n"
+	       "  -g     Output Gregorian calendar date\n"
+	       "  -q     Output Quadcent calendar date\n"
+	       "  -u     Output Unix time (decimal)\n"
+	       "  -x     Output Unix time (hexadecimal)\n"
+	       "  -h     Show this help\n"
+	       "  -v     Show version\n"
+	       "Input formats: [issue]number.frac, YYYY=MM=DD, YYYY-MM-DD, YYYY*MM*DD, Unumber\n",
+	       progname);
+	exit(EXIT_SUCCESS);
+      }
       for(f = formats; f->opt; f++)
 	if(**argv == f->opt) {
 	  f->sel = sel = 1;
