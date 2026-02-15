@@ -159,6 +159,21 @@ check "Round-trip Unix 1B via stardate" \
   "[-30]7220.37" \
   -s U1000000000
 
+# -v prints version
+check "Version flag" \
+  "stardate 1.6.2" \
+  -v
+
+# -h starts with Usage:
+actual=$("$STARDATE" -h 2>&1)
+if echo "$actual" | head -1 | grep -q '^Usage:'; then
+  PASS=$((PASS + 1))
+else
+  FAIL=$((FAIL + 1))
+  echo "FAIL: Help flag starts with Usage:"
+  echo "  actual: $actual"
+fi
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed out of $((PASS + FAIL)) tests"
 if [ "$FAIL" -ne 0 ]; then
