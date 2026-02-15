@@ -8,7 +8,7 @@ original documentation.
 
 ## Install
 
-### Homebrew (macOS)
+### [Homebrew](https://github.com/henrik242/homebrew-brew) (macOS)
 
     brew install henrik242/brew/stardates
 
