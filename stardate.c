@@ -46,8 +46,9 @@
  */
 
 /*
- *  This program converts between dates in five formats:
- *    - stardates
+ *  This program converts between dates in six formats:
+ *    - stardates (issue-based, from the Stardates FAQ)
+ *    - "new calc" TNG stardates (simple 1000 units/year from 2323)
  *    - the Julian calendar (with UTC time)
  *    - the Gregorian calendar (with UTC time)
  *    - the Quadcent calendar (see the Stardates FAQ for explanation)
@@ -87,12 +88,14 @@ static void getcurdate(intdate *);
 static void output(intdate const *);
 
 static unsigned sdin(char const *, intdate *);
+static unsigned newcalcin(char const *, intdate *);
 static unsigned julin(char const *, intdate *);
 static unsigned gregin(char const *, intdate *);
 static unsigned qcin(char const *, intdate *);
 static unsigned unixin(char const *, intdate *);
 
 static char const *sdout(intdate const *);
+static char const *newcalcout(intdate const *);
 static char const *julout(intdate const *);
 static char const *gregout(intdate const *);
 static char const *qcout(intdate const *);
@@ -105,16 +108,18 @@ static struct format {
   unsigned (*in)(char const *, intdate *);
   char const *(*out)(intdate const *);
 } formats[] = {
-  { 's', 0, sdin,   sdout    },
-  { 'j', 0, julin,  julout   },
-  { 'g', 0, gregin, gregout  },
-  { 'q', 0, qcin,   qcout    },
-  { 'u', 0, unixin, unixdout },
-  { 'x', 0, NULL,   unixxout },
+  { 's', 0, sdin,      sdout      },
+  { 'n', 0, newcalcin, newcalcout },
+  { 'j', 0, julin,     julout     },
+  { 'g', 0, gregin,    gregout    },
+  { 'q', 0, qcin,      qcout      },
+  { 'u', 0, unixin,    unixdout   },
+  { 'x', 0, NULL,      unixxout   },
   { 0, 0, NULL, NULL }
 };
 
 static unsigned sddigits = 2;
+static unsigned newcalcdigits = 2;
 
 static char const *progname;
 
@@ -134,13 +139,15 @@ int main(int argc, char **argv)
   while(*++argv && **argv == '-')
     while(*++*argv) {
       if(**argv == 'v') {
-	printf("stardate 1.6.2\n");
+	printf("stardate 1.7.0\n");
 	exit(EXIT_SUCCESS);
       }
       if(**argv == 'h') {
-	printf("Usage: %s [-s[0-6]] [-j] [-g] [-q] [-u] [-x] [-h] [-v] [date ...]\n"
+	printf("Usage: %s [-s[0-6]] [-n[0-6]] [-j] [-g] [-q] [-u] [-x] [-h] [-v] [date ...]\n"
 	       "Options:\n"
 	       "  -s[N]  Output stardate (N = decimal digits, 0-6, default 2)\n"
+	       "  -n[N]  Output TNG-style stardate, 1000 units/year from 2323\n"
+	       "         (N = decimal digits, 0-6, default 2)\n"
 	       "  -j     Output Julian calendar date\n"
 	       "  -g     Output Gregorian calendar date\n"
 	       "  -q     Output Quadcent calendar date\n"
@@ -148,7 +155,7 @@ int main(int argc, char **argv)
 	       "  -x     Output Unix time (hexadecimal)\n"
 	       "  -h     Show this help\n"
 	       "  -v     Show version\n"
-	       "Input formats: [issue]number.frac, YYYY=MM=DD, YYYY-MM-DD, YYYY*MM*DD, Unumber\n",
+	       "Input formats: [issue]number.frac, number.frac, YYYY=MM=DD, YYYY-MM-DD, YYYY*MM*DD, Unumber\n",
 	       progname);
 	exit(EXIT_SUCCESS);
       }
@@ -162,6 +169,8 @@ int main(int argc, char **argv)
       got:
       if(**argv == 's' && argv[0][1] >= '0' && argv[0][1] <= '6')
 	sddigits = *++*argv - '0';
+      if(**argv == 'n' && argv[0][1] >= '0' && argv[0][1] <= '6')
+	newcalcdigits = *++*argv - '0';
     }
   if(!sel)
     formats[0].sel = 1;
@@ -393,6 +402,87 @@ static unsigned sdin(char const *date, intdate *dt)
     dt->frac = (uint32_t)t;
   }
   return 1;
+}
+
+/* New calc: simple TNG-style stardates.
+ * 1000 stardate units per Gregorian calendar year, epoch at 2323-01-01.
+ * Stardate = (year - 2323) * 1000 + (day_of_year / days_in_year) * 1000.
+ * Input format: a bare decimal number (no brackets), e.g. "41153.7".
+ */
+
+static unsigned newcalcin(char const *date, intdate *dt)
+{
+  char *ptr;
+  char datebuf[32];
+  double sd;
+  int year;
+  double yearfrac;
+  unsigned daysinyear;
+  double daysec;
+  unsigned day, mon;
+  unsigned *mdays;
+
+  /* Must start with a digit and not contain [, =, -, *, U */
+  if(!ISDIGIT(*date))
+    return 0;
+  /* Quick scan: must be digits, optionally a dot, then more digits */
+  {
+    char const *p = date;
+    while(ISDIGIT(*p)) p++;
+    if(*p == '.') {
+      p++;
+      while(ISDIGIT(*p)) p++;
+    }
+    if(*p) return 0; /* trailing junk -- not our format */
+  }
+  /* Parse the number */
+  errno = 0;
+  sd = strtod(date, &ptr);
+  if(errno || *ptr)
+    return 0;
+
+  /* year = 2323 + floor(sd / 1000) */
+  year = 2323 + (int)(sd / 1000.0);
+  if(sd < 0) {
+    /* For negative stardates, adjust: e.g. -500.0 -> year 2322 */
+    if(sd < 0 && (sd - (year - 2323) * 1000.0) < 0)
+      year--;
+  }
+  yearfrac = (sd - (year - 2323) * 1000.0) / 1000.0;
+
+  daysinyear = gleapyear(year) ? 366 : 365;
+  daysec = yearfrac * daysinyear * 86400.0;
+
+  /* Build a Gregorian date string and use gregin to parse it */
+  day = (unsigned)(daysec / 86400.0);
+  if(day >= daysinyear) day = daysinyear - 1;
+  daysec -= day * 86400.0;
+  if(daysec < 0) daysec = 0;
+
+  /* Convert day-of-year to month/day */
+  mdays = gleapyear(year) ? lyrdays : nrmdays;
+  mon = 0;
+  while(mon < 12 && day >= mdays[mon]) {
+    day -= mdays[mon];
+    mon++;
+  }
+  mon++; /* 1-based */
+  day++; /* 1-based */
+
+  {
+    unsigned hr = (unsigned)(daysec / 3600.0);
+    unsigned mn, sc;
+    daysec -= hr * 3600.0;
+    mn = (unsigned)(daysec / 60.0);
+    daysec -= mn * 60.0;
+    sc = (unsigned)daysec;
+    if(hr > 23) hr = 23;
+    if(mn > 59) mn = 59;
+    if(sc > 59) sc = 59;
+    sprintf(datebuf, "%04d-%02d-%02dT%02d:%02d:%02d",
+	year, mon, day, hr, mn, sc);
+  }
+  return gregin(datebuf, dt);
 }
 
 static unsigned calin(char const *, intdate *, bool);
@@ -673,6 +763,69 @@ static char const *tngsdout(intdate const *dt)
     char *ptr = strchr(ret, 0);
     sprintf(ptr, ".%06lu", (unsigned long)(uint32_t)(h % 1000000UL));
     ptr[sddigits + 1] = 0;
+  }
+  return ret;
+}
+
+/* New calc output: simple TNG-style stardate.
+ * Converts intdate to Gregorian, then computes:
+ *   stardate = (year - 2323) * 1000 + (day_of_year / days_in_year) * 1000
+ */
+static char const *newcalcout(intdate const *dt)
+{
+  static char ret[24];
+  uint32_t tod = (uint32_t)(dt->sec % 86400UL);
+  uint64_t days = dt->sec / 86400UL;
+  uint64_t year;
+  unsigned ndays;
+  unsigned nmonth = 0;
+  unsigned cycle;
+  unsigned daysinyear;
+  double sd, frac;
+
+  /* Convert to Gregorian date -- same algorithm as calout(dt, 1) */
+  days += 146095UL;
+  year = (days / 146097UL) * 400UL + (days % 146097UL) / 366UL;
+  days = days + year / 100UL - year / 400UL;
+  days -= year * 365UL + year / 4UL;
+  year -= 399;
+  cycle = (unsigned)(year % 400UL);
+
+  /* Walk through months to get day-of-year */
+  ndays = (unsigned)days;
+  while(ndays >= xdays(1, cycle)[nmonth]) {
+    ndays -= xdays(1, cycle)[nmonth];
+    if(++nmonth == 12) {
+      nmonth = 0;
+      year++;
+      cycle = (unsigned)(year % 400UL);
+    }
+  }
+
+  /* Compute day-of-year (0-based) */
+  {
+    unsigned doy = 0;
+    unsigned m;
+    unsigned *mdays = gleapyear(year) ? lyrdays : nrmdays;
+    for(m = 0; m < nmonth; m++)
+      doy += mdays[m];
+    doy += ndays; /* ndays is 0-based day within month */
+    daysinyear = gleapyear(year) ? 366 : 365;
+
+    /* frac = (doy * 86400 + tod + dt->frac/2^32) / (daysinyear * 86400) */
+    frac = ((double)doy * 86400.0 + (double)tod +
+	(double)dt->frac / 4294967296.0) / ((double)daysinyear * 86400.0);
+  }
+
+  sd = ((double)year - 2323.0) * 1000.0 + frac * 1000.0;
+
+  /* Format the output */
+  if(newcalcdigits == 0) {
+    sprintf(ret, "%ld", (long)sd);
+  } else {
+    char fmt[8];
+    sprintf(fmt, "%%.%uf", newcalcdigits);
+    sprintf(ret, fmt, sd);
   }
   return ret;
 }

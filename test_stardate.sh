@@ -159,9 +159,89 @@ check "Round-trip Unix 1B via stardate" \
   "[-30]7220.37" \
   -s U1000000000
 
+# New calc: TNG epoch
+check "New calc: TNG epoch 2323-01-01" \
+  "0.00" \
+  -n 2323-01-01
+
+# New calc: TNG season 1 start
+check "New calc: 2364-01-01 = 41000" \
+  "41000.00" \
+  -n 2364-01-01
+
+# New calc: mid-year date
+check "New calc: 2364-05-23" \
+  "41390.71" \
+  -n 2364-05-23
+
+# New calc: year boundary
+check "New calc: 2365-01-01 = 42000" \
+  "42000.00" \
+  -n 2365-01-01
+
+# New calc: DS9 era
+check "New calc: 2369-01-01 = 46000" \
+  "46000.00" \
+  -n 2369-01-01
+
+# New calc: end of year
+check "New calc: 2364-12-31T23:59:59" \
+  "41999.999968" \
+  -n6 2364-12-31T23:59:59
+
+# New calc: precision n0
+check "New calc: precision n0" \
+  "41390" \
+  -n0 2364-05-23
+
+# New calc: precision n6
+check "New calc: precision n6" \
+  "41390.710383" \
+  -n6 2364-05-23
+
+# New calc: pre-2323 date outputs negative
+check "New calc: pre-2323 (year 2024)" \
+  "-298961.75" \
+  -n 2024-01-15
+
+# New calc: 1970-01-01
+check "New calc: Unix epoch 1970" \
+  "-353000.00" \
+  -n 1970-01-01
+
+# New calc input: bare number
+check "New calc input: 41000 to Gregorian" \
+  "2364-01-01T00:00:00" \
+  -g 41000
+
+# New calc input: bare number with fraction
+check "New calc input: 41153.7 to Gregorian" \
+  "2364-02-26T06:06:02" \
+  -g 41153.7
+
+# New calc input: epoch
+check "New calc input: 0.0 to Gregorian" \
+  "2323-01-01T00:00:00" \
+  -g 0.0
+
+# New calc input round-trip
+check "New calc input/output round-trip" \
+  "41153.70" \
+  -n 41153.7
+
+# New calc: both old and new side by side
+check "New calc: old and new side by side" \
+  "[21]41000.15 41000.00 2364-01-01T00:00:00" \
+  -s -n -g 2364-01-01
+
+# New calc input: 46500.5 round-trip
+check "New calc: 46500.5 round-trip" \
+  "46500.50" \
+  -n 46500.5
+
 # -v prints version
 check "Version flag" \
-  "stardate 1.6.2" \
+  "stardate 1.7.0" \
   -v
 
 # -h starts with Usage:
